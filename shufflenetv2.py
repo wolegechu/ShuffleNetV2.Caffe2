@@ -1,4 +1,4 @@
-from caffe2.python import model_helper, cnn, brew, core, workspace
+from caffe2.python import cnn
 
 # model = cnn.CNNModelHelper()
 def add_ShuffleNet_V2(model, output_channels=[24, 48, 96, 192, 1024],
@@ -17,21 +17,10 @@ def add_ShuffleNet_V2(model, output_channels=[24, 48, 96, 192, 1024],
                                            , s, dim_in, dim_out)
 
     s = model.Conv(s, 'conv_5', dim_in, output_channels[4], 1)
-    scale = 0.03125 # 1. / 32. for 224*224 to 7*7
-    return s, output_channels[4], scale
-
-def add_ShuffleNet_V2_roi_head(model, blob_in, dim_in, spatial_scale):
-    model.RoIFeatureTransform(
-        blob_in,
-        'roi_feat',
-        blob_rois='rois',
-        method=cfg.FAST_RCNN.ROI_XFORM_METHOD,
-        resolution=cfg.FAST_RCNN.ROI_XFORM_RESOLUTION,
-        sampling_ratio=cfg.FAST_RCNN.ROI_XFORM_SAMPLING_RATIO,
-        spatial_scale=spatial_scale
-    )
-    blob_out = model.AveragePool('roi_feat', 'avg_pooled', kernel=7)
-    return blob_out, 1024
+    s = model.AveragePool(s, 'avg_pooled', kernel=7)
+    s = model.FC(s, 'fc', 1024, 1000)
+    # scale = 0.03125 # 1. / 32. from 224*224 to 7*7
+    return s, 1000
 
 def basic_stem(model, data, dim_out=24):
     p = model.Conv(data, 'conv_1', 3, dim_out, 3, stride=2)

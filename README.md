@@ -1,5 +1,12 @@
 # ShuffleNetV2.Caffe2
 
+## TODO
+
+* [ ] Train/Test mode
+* [ ] Detection: backbone for Faster R-CNN
+* [ ] Detection: backbone for FPN
+* [ ] Pretrain model
+
 ```python
 from caffe2.python import model_helper, cnn, brew, core, workspace
 from shufflenetv2 import add_ShuffleNet_V2

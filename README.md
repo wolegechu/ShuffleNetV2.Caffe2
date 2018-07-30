@@ -8,7 +8,7 @@
 * [ ] Pretrain model
 
 ```python
-from caffe2.python import model_helper, cnn, brew, core, workspace
+from caffe2.python import cnn
 from shufflenetv2 import add_ShuffleNet_V2
 
 cnn_model = cnn.CNNModelHelper()

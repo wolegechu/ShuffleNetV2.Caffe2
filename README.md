@@ -1,10 +1,4 @@
 # ShuffleNetV2.Caffe2
-
-## TODO
-* [ ] Detection: backbone for Faster R-CNN
-* [ ] Detection: backbone for FPN
-* [ ] Pretrained model
-
 ## How to Use
 ![](Table_1.png)
 

@@ -3,22 +3,34 @@ from caffe2.python import cnn
 # model = cnn.CNNModelHelper()
 def add_ShuffleNet_V2(model, output_channels=[24, 48, 96, 192, 1024],
                       stride_1_repeat_times=[3, 7, 3],
-                      stride_2_repeat_times=[1, 1, 1]):
+                      stride_2_repeat_times=[1, 1, 1],
+                      testing=False,
+                      detection=False):
+    """Buil a shuffle net.
+
+    Arguments:
+        model (CNNModelHelper): the detection/classification model to use
+        output_channels (list): the output channels of each stage
+        stride_1(2)_repeat_times (list): the replication times of the block in each stage
+        testing (bool): build model for testing or training
+        detection (bool): build model for detection. If ture, an additional 3x3 depthwise convolution 
+            would be added before the first pointwise convolution in each building block.
+    """
     s, dim_in = basic_stem(model, 'data', output_channels[0])
     for idx, (dim_out, n_stride_1, n_stride_2) in enumerate(zip(output_channels[1:4],
                        stride_1_repeat_times, stride_2_repeat_times)):
         for i in range(n_stride_2):
             s, dim_in = add_block_stride_2(model, 'stage_' + str(idx+2)
                                            + '_stride2_' + str(i+1)
-                                           , s, dim_in, dim_out)
+                                           , s, dim_in, dim_out, testing, detection)
         for i in range(n_stride_1):
             s, dim_in = add_block_stride_1(model, 'stage_' + str(idx+2)
                                            + '_stride1_' + str(i+1)
-                                           , s, dim_in, dim_out)
+                                           , s, dim_in, dim_out, testing, detection)
 
     s = model.Conv(s, 'conv_5', dim_in, output_channels[4], 1)
     s = model.AveragePool(s, 'avg_pooled', kernel=7)
-    s = model.FC(s, 'fc', 1024, 1000)
+    s = model.FC(s, 'fc', output_channels[4], 1000)
     # scale = 0.03125 # 1. / 32. from 224*224 to 7*7
     return s, 1000
 

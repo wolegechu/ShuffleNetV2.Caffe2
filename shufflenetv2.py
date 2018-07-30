@@ -27,19 +27,28 @@ def basic_stem(model, data, dim_out=24):
     p = model.MaxPool(p, 'pool_1', stride=2, kernel=3)
     return p, dim_out
 
-def add_block_stride_2(model, prefix, blob_in, dim_in, dim_out):
+def add_block_stride_2(model, prefix, blob_in, dim_in, dim_out, testing=False, detection=True):
     dim_out = int(dim_out / 2)
+    right = left = blob_in
 
-    right = model.Conv(blob_in, prefix + '_right_conv_1', dim_in, dim_in, 1)
-    right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=False)
+    if detection:
+        right = model.Conv(right, prefix + '_right_conv_d', dim_in, dim_in, 3, group=dim_in, pad=1) # Enlarge the receptive field for detection task
+        right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=testing)
+
+    right = model.Conv(right, prefix + '_right_conv_1', dim_in, dim_in, 1)
+    right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=testing)
     right = model.Relu(right, right)
     right = model.Conv(right, prefix + '_right_dwconv', dim_in, dim_in, 3, stride=2, group=dim_in, pad=1)
-    right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=False)
+    right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=testing)
     right = model.Conv(right, prefix + '_right_conv_3', dim_in, dim_out, 1)
-    right = model.SpatialBN(right, right + '_bn', dim_out, epsilon=1e-3, is_test=False)
+    right = model.SpatialBN(right, right + '_bn', dim_out, epsilon=1e-3, is_test=testing)
     right = model.Relu(right, right)
 
-    left = model.Conv(blob_in, prefix + '_left_dwconv', dim_in, dim_in, 3, stride=2, group=dim_in, pad=1)
+    if detection:
+        left = model.Conv(left, prefix + '_left_conv_d', dim_in, dim_in, 3, group=dim_in, pad=1) # Enlarge the receptive field for detection task
+        left = model.SpatialBN(left, right + '_bn', dim_in, epsilon=1e-3, is_test=testing)
+
+    left = model.Conv(left, prefix + '_left_dwconv', dim_in, dim_in, 3, stride=2, group=dim_in, pad=1)
     left = model.SpatialBN(left, left + '_bn', dim_in, epsilon=1e-3, is_test=False)
     left = model.Conv(left, prefix + '_left_conv_1', dim_in, dim_out, 1)
     left = model.SpatialBN(left, left + '_bn', dim_out, epsilon=1e-3, is_test=False)
@@ -49,14 +58,20 @@ def add_block_stride_2(model, prefix, blob_in, dim_in, dim_out):
     shuffled = model.net.ChannelShuffle(concated, prefix + '_shuffled')
     return shuffled, dim_out * 2
 
-def add_block_stride_1(model, prefix, blob_in, dim_in, dim_out):
+def add_block_stride_1(model, prefix, blob_in, dim_in, dim_out, testing=False, detection=True):
     dim_in = int(dim_in / 2)
     dim_out = int(dim_out / 2)
     model.net.Split(blob_in, [prefix + '_left', prefix + '_right'])
-    right = model.Conv(prefix + '_right', prefix + '_right_conv_1', dim_in, dim_in, 1)
+
+    right = prefix + '_right'
+    if detection:
+        right = model.Conv(right, prefix + '_right_conv_d', dim_in, dim_in, 3, group=dim_in, pad=1) # Enlarge the receptive field for detection task
+        right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=testing)
+
+    right = model.Conv(right, prefix + '_right_conv_1', dim_in, dim_in, 1)
     right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=False)
     right = model.Relu(right, right)
-    right = model.Conv(right, prefix + '_right_dwconv', dim_in, dim_in, 3, stride=1, group=dim_in)
+    right = model.Conv(right, prefix + '_right_dwconv', dim_in, dim_in, 3, stride=1, group=dim_in, pad=1)
     right = model.SpatialBN(right, right + '_bn', dim_in, epsilon=1e-3, is_test=False)
     right = model.Conv(right, prefix + '_right_conv_3', dim_in, dim_out, 1)
     right = model.SpatialBN(right, right + '_bn', dim_out, epsilon=1e-3, is_test=False)

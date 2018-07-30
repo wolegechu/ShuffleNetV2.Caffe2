@@ -7,6 +7,7 @@
 * [ ] Detection: backbone for FPN
 * [ ] Pretrain model
 
+## How to Use
 ```python
 from caffe2.python import cnn
 from shufflenetv2 import add_ShuffleNet_V2

@@ -22,4 +22,4 @@ workspace.RunNetOnce(cnn_model.Proto())
 print(workspace.FetchBlob('conv_5'))
 ```
 ### Use ShuffleNet on Detectron
-if you want tu use ShuffleNetV2 as a backbone of a detection framework (egg., Faster R-CNN, FPN), simply download [this file](https://github.com/wolegechu/Detectron/blob/master/detectron/modeling/ShuffleNetV2.py) to `detectron\modeling\ShuffleNetV2.py`, and set the parameter `CONV_BODY: ShuffleNetV2.add_ShuffleNet_V2` in the yaml file.
+If you want tu use ShuffleNetV2 as a backbone of a detection framework (egg., Faster R-CNN, FPN), simply download [this file](https://github.com/wolegechu/Detectron/blob/master/detectron/modeling/ShuffleNetV2.py) to `detectron\modeling\ShuffleNetV2.py`, and set the parameter `CONV_BODY: ShuffleNetV2.add_ShuffleNet_V2` in the yaml file.
